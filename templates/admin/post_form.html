@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Post' if post else 'Create Post' }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">{{ 'Edit Post' if post else 'Create New Post' }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required
+                               value="{{ post.title if post else '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="summary" class="form-label">Summary</label>
+                        <textarea class="form-control" id="summary" name="summary" rows="2">{{ post.summary if post else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="10">{{ post.content if post else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="featured_image" class="form-label">Featured Image</label>
+                        {% if post and post.featured_image %}
+                        <div class="mb-2">
+                            <img src="{{ url_for('static', filename='uploads/' + post.featured_image) }}" 
+                                 alt="Current featured image" class="img-thumbnail" style="max-height: 200px">
+                        </div>
+                        {% endif %}
+                        <input type="file" class="form-control" id="featured_image" name="featured_image" accept="image/*">
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="published" name="published"
+                               {% if post and post.published %}checked{% endif %}>
+                        <label class="form-check-label" for="published">Published</label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">{{ 'Update Post' if post else 'Create Post' }}</button>
+                        <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script>
+    const easyMDE = new EasyMDE({
+        element: document.getElementById('content'),
+        spellChecker: false,
+        autosave: {
+            enabled: true,
+            uniqueId: 'blogpost_{{ post.id if post else "new" }}'
+        }
+    });
+</script>
+{% endblock %}

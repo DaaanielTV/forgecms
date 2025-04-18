@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">Latest Posts</h1>
+        {% if posts %}
+            {% for post in posts %}
+            <article class="card mb-4">
+                {% if post.featured_image %}
+                <img src="{{ url_for('static', filename='uploads/' + post.featured_image) }}" class="card-img-top" alt="{{ post.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="card-title">{{ post.title }}</h2>
+                    <p class="card-text">{{ post.summary }}</p>
+                    <div class="text-muted mb-2">
+                        Posted by {{ post.author.username }} on {{ post.created_at.strftime('%B %d, %Y') }}
+                    </div>
+                    <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="btn btn-primary">Read More</a>
+                </div>
+            </article>
+            {% endfor %}
+        {% else %}
+            <p>No posts available.</p>
+        {% endif %}
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">About BlogForge</h5>
+                <p class="card-text">Welcome to BlogForge, a modern blogging platform built with Flask and MariaDB.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
