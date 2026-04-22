@@ -12,6 +12,13 @@ ForgeCMS is a Flask-based blogging and CMS application backed by MariaDB. It inc
 - SEO-friendly slugs and Bootstrap-based responsive UI
 - Image upload support for post media
 
+### Repository layout
+- `app/` – Flask application package (blueprints, models, app factory)
+- `templates/` – Jinja2 HTML templates
+- `static/` – CSS and uploaded/static assets
+- `migrations/` – Database migration artifacts (including `migrations/manual/` SQL files)
+- `wsgi.py` – WSGI entrypoint for local/dev server startup
+
 ### Tech stack
 - Python 3.8+
 - Flask
@@ -68,6 +75,10 @@ DB_NAME=forgecms
 UPLOAD_FOLDER=static/uploads
 MAX_CONTENT_LENGTH=16777216
 ```
+
+Notes:
+- `UPLOAD_FOLDER` should stay inside `static/` so uploaded media is web-accessible.
+- `MAX_CONTENT_LENGTH` is in bytes (`16777216` = 16 MB).
 
 ### 6) Apply database migrations
 ```bash
