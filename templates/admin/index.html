@@ -26,13 +26,22 @@
                 <td>{{ post.author.username }}</td>
                 <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
                 <td>
-                    <span class="badge {% if post.published %}bg-success{% else %}bg-secondary{% endif %}">
-                        {{ 'Published' if post.published else 'Draft' }}
+                    {% set status = post.status if post.status else ('published' if post.published else 'draft') %}
+                    <span class="badge 
+                        {% if status == 'published' %}bg-success
+                        {% elif status == 'scheduled' %}bg-info
+                        {% elif status == 'archived' %}bg-dark
+                        {% else %}bg-secondary{% endif %}">
+                        {{ status|capitalize }}
                     </span>
+                    {% if status == 'scheduled' and post.publish_at %}
+                    <div class="small text-muted">at {{ post.publish_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                    {% endif %}
                 </td>
                 <td>
                     <div class="btn-group">
                         <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="btn btn-sm btn-info">View</a>
+                        <a href="{{ url_for('admin.preview_post', id=post.id) }}" class="btn btn-sm btn-secondary">Preview</a>
                         <a href="{{ url_for('admin.edit_post', id=post.id) }}" class="btn btn-sm btn-warning">Edit</a>
                         <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ post.id }}">
                             Delete
