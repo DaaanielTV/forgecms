@@ -10,6 +10,24 @@ A modern blog/CMS system built with Flask and MariaDB.
 - Image upload support
 - Responsive design using Bootstrap
 - SEO-friendly URLs
+- Post workflow states (draft, scheduled, published, archived)
+- Admin preview route for unpublished content
+
+## Incremental CMS Roadmap
+
+The project is intentionally evolving in small, low-risk increments:
+
+1. **Workflow + Preview (implemented):** status model, scheduling timestamp, admin preview.
+2. **Taxonomy:** categories, tags, filtering UI.
+3. **Revisions:** immutable post revision snapshots + rollback.
+4. **Media library:** media table, metadata, and picker improvements.
+5. **RBAC:** role + permission models (keep `is_admin` compatibility).
+6. **SEO fields:** per-post meta title/description/canonical/og image.
+7. **Search:** keyword + status/category/tag filters for admin/public lists.
+8. **Dashboard analytics:** top posts, draft/scheduled counts, and activity snapshots.
+9. **Headless API:** authenticated JSON endpoints with minimal schema.
+
+Each phase should ship with migration scripts and remain backward compatible.
 
 ## Prerequisites
 
