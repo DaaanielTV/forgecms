@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, login_manager
 
 """
-This module contains the database models for the BlogForge application.
+This module contains the database models for the ForgeCMS application.
 Any changes to these models should be followed by:
 1. flask db migrate -m "Description of changes"
 2. flask db upgrade

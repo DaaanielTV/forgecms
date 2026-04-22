@@ -1,4 +1,4 @@
--- ForgeCMS / BlogForge manual migration
+-- ForgeCMS manual migration
 -- Feature set: Post workflow states (draft/scheduled/published/archived)
 
 ALTER TABLE post
