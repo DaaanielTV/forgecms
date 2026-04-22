@@ -114,3 +114,9 @@ mysqldump -u your_user -p forgecms > backup.sql
 
 For production, run with a WSGI server (for example Gunicorn) behind NGINX, use HTTPS, and set a strong `SECRET_KEY`.
 
+
+## Community and governance
+
+- [Contributing guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [License (GNU GPLv3)](LICENSE)
