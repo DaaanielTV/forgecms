@@ -1,5 +1,5 @@
 @echo off
-echo Setting up BlogForge development environment...
+echo Setting up ForgeCMS development environment...
 
 :: Create and activate virtual environment
 python -m venv venv
