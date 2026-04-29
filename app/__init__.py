@@ -17,10 +17,20 @@ def create_app():
     app = Flask(__name__)
     
     # Configuration
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'change-me-in-production')
+
+    database_url = os.getenv('SQLALCHEMY_DATABASE_URI')
+    if not database_url:
+        db_user = os.getenv('DB_USER', 'forgecms')
+        db_password = os.getenv('DB_PASSWORD', '')
+        db_host = os.getenv('DB_HOST', 'localhost')
+        db_port = os.getenv('DB_PORT', '3306')
+        db_name = os.getenv('DB_NAME', 'forgecms')
+        database_url = f"mysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
+    app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'static/uploads')
     app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))
 
     # Initialize Flask extensions
