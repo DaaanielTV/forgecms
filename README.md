@@ -17,7 +17,11 @@ ForgeCMS is a Flask-based blogging and CMS application backed by MariaDB. It inc
 - `templates/` – Jinja2 HTML templates
 - `static/` – CSS and uploaded/static assets
 - `migrations/` – Database migration artifacts (including `migrations/manual/` SQL files)
-- `wsgi.py` – WSGI entrypoint for local/dev server startup
+- `wsgi.py` – WSGI entrypoint
+- `Dockerfile` – Production image definition
+- `docker-compose.yml` – Default single-server deployment
+- `docker-compose.enterprise.yml` – Enterprise multi-instance deployment
+- `docker/` – Container helper scripts and NGINX configuration
 
 ### Tech stack
 - Python 3.8+
@@ -25,8 +29,64 @@ ForgeCMS is a Flask-based blogging and CMS application backed by MariaDB. It inc
 - SQLAlchemy + Flask-Migrate
 - MariaDB 10.5+
 - Bootstrap 5
+- Docker / Docker Compose
 
-## Installation
+## Quick start with Docker (recommended)
+
+### Prerequisites
+- Docker Engine 24+
+- Docker Compose v2+
+
+### 1) Configure environment
+```bash
+cp .env.example .env
+```
+
+Update at least:
+- `SECRET_KEY`
+- `DB_PASSWORD`
+- `DB_ROOT_PASSWORD`
+
+### 2) Default mode: single Linux server
+Runs one ForgeCMS container plus one MariaDB container on one host.
+
+```bash
+docker compose up -d --build
+```
+
+- ForgeCMS: `http://localhost:8000`
+- Persistent data:
+  - `mariadb_data` volume for DB
+  - `uploads_data` volume for media uploads
+
+Stop:
+```bash
+docker compose down
+```
+
+### 3) Enterprise mode: multi-instance application tier
+Runs two ForgeCMS app instances behind NGINX plus one MariaDB server.
+
+```bash
+docker compose -f docker-compose.enterprise.yml up -d --build
+```
+
+- Entry point: `http://localhost` (port 80)
+- Backend app containers: `forgecms-a`, `forgecms-b`
+- Shared uploads volume mounted by both app containers and NGINX
+
+Stop:
+```bash
+docker compose -f docker-compose.enterprise.yml down
+```
+
+## Docker behavior notes
+- Container startup waits for MariaDB before launching the app.
+- Database migrations run automatically at startup.
+  - In enterprise mode, only `forgecms-a` runs migrations.
+- `UPLOAD_FOLDER` defaults to `static/uploads` and is persisted in Docker volumes.
+
+## Local non-Docker setup
 
 ### 1) Clone the repository
 ```bash
@@ -39,8 +99,6 @@ cd forgecms
 python -m venv venv
 # Linux/macOS
 source venv/bin/activate
-# Windows (PowerShell)
-# .\venv\Scripts\Activate.ps1
 ```
 
 ### 3) Install dependencies
@@ -57,44 +115,23 @@ FLUSH PRIVILEGES;
 ```
 
 ### 5) Configure environment variables
-Copy `.env.example` to `.env` and update values as needed:
-
 ```bash
 cp .env.example .env
 ```
-
-Example values:
-```dotenv
-FLASK_APP=app
-FLASK_ENV=development
-SECRET_KEY=change-this-to-a-secure-secret-key
-DB_HOST=localhost
-DB_USER=forgecms
-DB_PASSWORD=your_password
-DB_NAME=forgecms
-UPLOAD_FOLDER=static/uploads
-MAX_CONTENT_LENGTH=16777216
-```
-
-Notes:
-- `UPLOAD_FOLDER` should stay inside `static/` so uploaded media is web-accessible.
-- `MAX_CONTENT_LENGTH` is in bytes (`16777216` = 16 MB).
 
 ### 6) Apply database migrations
 ```bash
 flask db upgrade
 ```
 
-## Usage
-
-### Run the development server
+### 7) Run the development server
 ```bash
 flask run
 ```
 
 By default, Flask serves on `http://127.0.0.1:5000`.
 
-### Create an admin user (Flask shell)
+## Create an admin user (Flask shell)
 ```bash
 flask shell
 ```
@@ -108,23 +145,6 @@ admin.set_password('your-secure-password')
 db.session.add(admin)
 db.session.commit()
 ```
-
-### Useful maintenance commands
-```bash
-# Create a new migration after model changes
-flask db migrate -m "describe change"
-
-# Apply pending migrations
-flask db upgrade
-
-# Backup database
-mysqldump -u your_user -p forgecms > backup.sql
-```
-
-## Production notes
-
-For production, run with a WSGI server (for example Gunicorn) behind NGINX, use HTTPS, and set a strong `SECRET_KEY`.
-
 
 ## Community and governance
 
