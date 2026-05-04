@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
 # Load environment variables
 load_dotenv()
@@ -17,7 +18,10 @@ def create_app():
     app = Flask(__name__)
     
     # Configuration
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'change-me-in-production')
+    secret_key = os.getenv('SECRET_KEY')
+    if not secret_key:
+        raise RuntimeError('SECRET_KEY must be set via environment variable.')
+    app.config['SECRET_KEY'] = secret_key
 
     database_url = os.getenv('SQLALCHEMY_DATABASE_URI')
     if not database_url:
@@ -32,6 +36,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'static/uploads')
     app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))
+    Path(app.config['UPLOAD_FOLDER']).mkdir(parents=True, exist_ok=True)
 
     # Initialize Flask extensions
     db.init_app(app)

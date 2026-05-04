@@ -5,11 +5,33 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from slugify import slugify
 import os
+import uuid
 from sqlalchemy.exc import IntegrityError
+from PIL import Image
 from . import db
 from .models import Post
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+ALLOWED_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+
+
+def _save_featured_image(file_storage):
+    filename = secure_filename(file_storage.filename or '')
+    _, ext = os.path.splitext(filename.lower())
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise ValueError('Unsupported image format. Allowed: jpg, jpeg, png, gif, webp.')
+
+    try:
+        image = Image.open(file_storage.stream)
+        image.verify()
+        file_storage.stream.seek(0)
+    except Exception as exc:
+        raise ValueError('Uploaded file is not a valid image.') from exc
+
+    unique_name = f"{uuid.uuid4().hex}{ext}"
+    destination = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_name)
+    file_storage.save(destination)
+    return unique_name
 
 def admin_required(f):
     @wraps(f)
@@ -78,9 +100,11 @@ def create_post():
         if 'featured_image' in request.files:
             file = request.files['featured_image']
             if file.filename:
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                post.featured_image = filename
+                try:
+                    post.featured_image = _save_featured_image(file)
+                except ValueError as exc:
+                    flash(str(exc))
+                    return render_template('admin/post_form.html', post=post)
         
         db.session.add(post)
         try:
@@ -109,9 +133,11 @@ def edit_post(id):
         if 'featured_image' in request.files:
             file = request.files['featured_image']
             if file.filename:
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                post.featured_image = filename
+                try:
+                    post.featured_image = _save_featured_image(file)
+                except ValueError as exc:
+                    flash(str(exc))
+                    return render_template('admin/post_form.html', post=post)
         
         try:
             db.session.commit()

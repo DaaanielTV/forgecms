@@ -1,9 +1,16 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
+from urllib.parse import urlparse, urljoin
 from . import db
 from .models import User
 
 auth_bp = Blueprint('auth', __name__)
+
+
+def _is_safe_redirect_url(target):
+    host_url = urlparse(request.host_url)
+    redirect_url = urlparse(urljoin(request.host_url, target or ''))
+    return redirect_url.scheme in ('http', 'https') and host_url.netloc == redirect_url.netloc
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -18,7 +25,9 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             next_page = request.args.get('next')
-            return redirect(next_page if next_page else url_for('blog.index'))
+            if next_page and _is_safe_redirect_url(next_page):
+                return redirect(next_page)
+            return redirect(url_for('blog.index'))
         
         flash('Invalid email or password')
     
@@ -46,10 +55,6 @@ def register():
         # Create new user
         user = User(username=username, email=email)
         user.set_password(password)
-        
-        # First user is automatically an admin
-        if User.query.count() == 0:
-            user.is_admin = True
         
         db.session.add(user)
         db.session.commit()

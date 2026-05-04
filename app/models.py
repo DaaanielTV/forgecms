@@ -3,6 +3,8 @@ from datetime import datetime
 from sqlalchemy import and_, or_
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import bleach
+import markdown
 from . import db, login_manager
 
 """
@@ -93,3 +95,18 @@ class Post(db.Model):
 
     def __repr__(self):
         return f'<Post {self.title}>'
+
+    @property
+    def rendered_content(self):
+        rendered = markdown.markdown(self.content or '')
+        allowed_tags = set(bleach.sanitizer.ALLOWED_TAGS).union({
+            'p', 'pre', 'code', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'blockquote', 'hr', 'br', 'ul', 'ol', 'li', 'strong', 'em',
+            'a', 'img'
+        })
+        allowed_attrs = {
+            **bleach.sanitizer.ALLOWED_ATTRIBUTES,
+            'a': ['href', 'title', 'rel'],
+            'img': ['src', 'alt', 'title'],
+        }
+        return bleach.clean(rendered, tags=allowed_tags, attributes=allowed_attrs, protocols={'http', 'https', 'mailto'}, strip=True)
